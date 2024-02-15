@@ -1,0 +1,16 @@
+{
+  "Author": "wav",
+  "Name": "RaidMitigationRecaster",
+  "Punchline": "A simple mitigation skill recast management plugin for raids.",
+  "Description": "レイド用のシンプルな軽減スキルのリキャスト管理プラグイン。",
+  "InternalName": "RaidMitigationRecaster",
+  "Tags": [ "UI", "Recast", "Buff" ],
+  "RepoUrl": "https://github.com/ktwave/RaidMitigationRecaster/tree/master/RaidMitigationRecaster",
+  "LoadPriority": 0,
+  "AssemblyVersion": "1.0.0.0",
+  "TestingAssemblyVersion": "1.0.0.0",
+  "ApplicableVersion": "any",
+  "DalamudApiLevel": 9,
+  "DownloadLinkInstall": "https://github.com/ktwave/RaidMitigationRecaster/releases/download/latest/RaidMitigationRecaster.zip",
+  "DownloadLinkUpdate": "https://github.com/ktwave/RaidMitigationRecaster/releases/download/latest/RaidMitigationRecaster.zip"
+}
