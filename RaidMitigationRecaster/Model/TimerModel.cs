@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace RaidMitigationRecaster.Model {
     public class TimerModel {
         public class Timer : ActionModel.Action {
-            public int ObjectId;
+            public uint ObjectId;
             public float RemainingTime;
             public Stopwatch StopWatch;
         }

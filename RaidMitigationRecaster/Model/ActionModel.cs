@@ -10,9 +10,9 @@ using System.Threading.Tasks;
 namespace RaidMitigationRecaster.Model {
     public class ActionModel {
         public class Action {
-            public int ClassJobId;
-            public int ActionId;
-            public int StatusId;
+            public uint ClassJobId;
+            public uint ActionId;
+            public uint StatusId;
             public bool IsBuff;
             public bool IsThrow;
             public float RecastTime;

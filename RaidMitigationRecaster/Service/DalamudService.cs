@@ -10,7 +10,7 @@ using FFXIVClientStructs.FFXIV.Client.Game;
 using Dalamud.Game;
 using Dalamud.Game.ClientState.Objects;
 
-namespace RaidBuffRecaster.Service
+namespace RaidMitigationRecaster.Service
 {
     class DalamudService
     {

@@ -18,7 +18,7 @@ namespace RaidMitigationRecaster.Service {
             a.ActionId = (int)Enums.Actions.TANK.Reprisal;
             a.StatusId = (int)Enums.Statuses.DeBuff.TANK.Reprisal;
             a.RecastTime = 60f;
-            a.IsBuff = true;
+            a.IsBuff = false;
             a.IsThrow = false;
             var ImagePath = Path.Combine(pluginInterface.AssemblyLocation.Directory?.FullName!, "images\\" + a.ActionId + ".png");
             a.Image = pluginInterface.UiBuilder.LoadImage(ImagePath);
@@ -63,7 +63,7 @@ namespace RaidMitigationRecaster.Service {
             a.ActionId = (int)Enums.Actions.TANK.Reprisal;
             a.StatusId = (int)Enums.Statuses.DeBuff.TANK.Reprisal;
             a.RecastTime = 60f;
-            a.IsBuff = true;
+            a.IsBuff = false;
             a.IsThrow = false;
             ImagePath = Path.Combine(pluginInterface.AssemblyLocation.Directory?.FullName!, "images\\" + a.ActionId + ".png");
             a.Image = pluginInterface.UiBuilder.LoadImage(ImagePath);
@@ -119,7 +119,7 @@ namespace RaidMitigationRecaster.Service {
             a.ActionId = (int)Enums.Actions.TANK.Reprisal;
             a.StatusId = (int)Enums.Statuses.DeBuff.TANK.Reprisal;
             a.RecastTime = 60f;
-            a.IsBuff = true;
+            a.IsBuff = false;
             a.IsThrow = false;
             ImagePath = Path.Combine(pluginInterface.AssemblyLocation.Directory?.FullName!, "images\\" + a.ActionId + ".png");
             a.Image = pluginInterface.UiBuilder.LoadImage(ImagePath);
@@ -164,7 +164,7 @@ namespace RaidMitigationRecaster.Service {
             a.ActionId = (int)Enums.Actions.TANK.Reprisal;
             a.StatusId = (int)Enums.Statuses.DeBuff.TANK.Reprisal;
             a.RecastTime = 60f;
-            a.IsBuff = true;
+            a.IsBuff = false;
             a.IsThrow = false;
             ImagePath = Path.Combine(pluginInterface.AssemblyLocation.Directory?.FullName!, "images\\" + a.ActionId + ".png");
             a.Image = pluginInterface.UiBuilder.LoadImage(ImagePath);

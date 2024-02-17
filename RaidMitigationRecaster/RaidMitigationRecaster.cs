@@ -4,37 +4,40 @@ using Dalamud.Logging;
 using Dalamud.Plugin;
 using RaidMitigationRecaster.Enums;
 using Newtonsoft.Json.Linq;
-using RaidBuffRecaster.Service;
+using RaidMitigationRecaster.Service;
 using RaidMitigationRecaster.Service;
 using System.Numerics;
 using RaidMitigationRecaster.Model;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Plugin.Services;
+using Dalamud.Interface.Internal;
 
 namespace RaidMitigationRecaster {
     public unsafe class RaidMitigationRecaster : IDalamudPlugin {
-        bool isDebug = true;
-        // bool isDebug = false;
+        private DalamudPluginInterface PluginInterface { get; init; }
 
         public static string Name => "Raid Mitigation Recaster";
         bool isConfigOpen = false;
         internal Config config;
         internal static RaidMitigationRecaster R;
 
-        private DalamudPluginInterface PluginInterface { get; init; }
-
         // user var
-        public List<ActionModel.Action> Actions;
+        public List<ActionModel.Action> actions;
         public List<TimerModel.Timer> Timers;
-        public List<uint> localPartyList;
-        public bool IsPartyListChanged = false;
+        public uint localPlayerClassJobId;
+        public IPartyList localPartyList;
+        public bool isPartyListChanged = false;
+        public IDalamudTextureWrap imageBlackOut;
+
+        bool isDebug = true;
+        // bool isDebug = false;
 
         // user constants
         public static float ImageSize => 76f;
-        public static int MaxCol => 4;
+        public static int MaxCol => 5;
         public static int MaxRow => 8;
         public static Vector4 White => new Vector4(1f,1f,1f,1f);
-        public static Vector4 Red => new Vector4(1f, 0f, 0f, 0f);
+        public static Vector4 Red => new Vector4(1f, 0f, 0f, 1f);
         public static Vector4 Black => new Vector4(0f,0f,0f,1f);
 
         public void Dispose() {
@@ -50,8 +53,10 @@ namespace RaidMitigationRecaster {
             DalamudService.PluginInterface.UiBuilder.Draw += Draw;
             config = DalamudService.PluginInterface.GetPluginConfig() as Config ?? new Config();
 
-            Actions = ActionService.SetActions(config, pluginInterface);
-            localPartyList = DalamudService.PartyList.Select(p => p.ClassJob.Id).Order().ToList(); ;
+            actions = ActionService.SetActions(config, pluginInterface);
+            // localPartyList = DalamudService.PartyList;
+            var ImagePath = Path.Combine(pluginInterface.AssemblyLocation.Directory?.FullName!, "images\\blackout.png");
+            imageBlackOut = pluginInterface.UiBuilder.LoadImage(ImagePath);
 
             PluginLog.Information("["+Name+"] Initialize!!!");
 
@@ -73,16 +78,18 @@ namespace RaidMitigationRecaster {
 
                 if (!config.IsEnabled) return;
 
-                if (isDebug) {
-                    MainService.DrawDebugWindow(ref config);
-                    MainService.DrawDebugHotbarInfo();
-                }
-                /*
-                IsPartyListChanged = MainService.IsChangedPartyList(ref localPartyList);
-                if (IsPartyListChanged) MainService.UpdateTimers();
+                if (isDebug) MainService.DrawDebugWindow(ref config); //MainService.DrawDebugHotbarInfo();
 
-                MainService.DrawMainWindow(, config);
-                */
+                isPartyListChanged = MainService.IsChangedPartyList(ref localPlayerClassJobId ,ref localPartyList);
+                if (isPartyListChanged) MainService.UpdateTimers(actions, localPlayerClassJobId, localPartyList, ref Timers);
+
+                if (config.IsEnabledInCombat && !DalamudService.Condition[ConditionFlag.InCombat]) return;
+
+                if (config.IsPreview) {
+                    MainService.DrawPleaviewWindow(actions, config);
+                } else {
+                    if(Timers != null) MainService.DrawMainWindow(ref Timers, config, imageBlackOut);
+                }
             } catch (Exception e) {
                 PluginLog.Error(e.Message + "\n" + e.StackTrace);
             } finally {

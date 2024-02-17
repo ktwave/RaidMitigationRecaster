@@ -22,6 +22,10 @@ namespace RaidMitigationRecaster {
         public bool IsPreview { get; set; } = false;
         public bool IsEnabled { get; set; } = false;
         public bool IsLeftAligin { get; set; } = false;
+        public bool IsEnabledInCombat { get; set; } = false;
+        public float FontScale { get; set; } = 100;
+        public float FontOffsetX { get; set; } = 0;
+        public float FontOffsetY { get; set; } = 0;
 
         public GameFontFamilyAndSize? Font = null;
 
