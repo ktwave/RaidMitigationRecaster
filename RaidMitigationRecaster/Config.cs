@@ -19,7 +19,6 @@ namespace RaidMitigationRecaster {
         public float Size { get; set; } = 100;
         public float PaddingX { get; set; } = 0;
         public float PaddingY { get; set; } = 0;
-        public bool IsPreview { get; set; } = false;
         public bool IsEnabled { get; set; } = false;
         public bool IsLeftAligin { get; set; } = false;
         public bool IsEnabledInCombat { get; set; } = false;

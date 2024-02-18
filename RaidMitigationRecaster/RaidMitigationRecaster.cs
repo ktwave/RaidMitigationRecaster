@@ -78,18 +78,15 @@ namespace RaidMitigationRecaster {
 
                 if (!config.IsEnabled) return;
 
-                if (isDebug) MainService.DrawDebugWindow(ref config); //MainService.DrawDebugHotbarInfo();
-
                 isPartyListChanged = MainService.IsChangedPartyList(ref localPlayerClassJobId ,ref localPartyList);
                 if (isPartyListChanged) MainService.UpdateTimers(actions, localPlayerClassJobId, localPartyList, ref Timers);
 
                 if (config.IsEnabledInCombat && !DalamudService.Condition[ConditionFlag.InCombat]) return;
 
-                if (config.IsPreview) {
-                    MainService.DrawPleaviewWindow(actions, config);
-                } else {
-                    if(Timers != null) MainService.DrawMainWindow(ref Timers, config, imageBlackOut);
-                }
+                // if (isDebug) MainService.DrawDebugWindow(ref localPartyList, ref config); //MainService.DrawDebugHotbarInfo();
+
+                if(Timers != null) MainService.DrawMainWindow(ref Timers, config, imageBlackOut);
+                
             } catch (Exception e) {
                 PluginLog.Error(e.Message + "\n" + e.StackTrace);
             } finally {

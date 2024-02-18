@@ -38,12 +38,6 @@ namespace RaidMitigationRecaster.Service {
 
                 ImGui.Spacing();
 
-                var isPreview = config.IsPreview;
-                if (ImGui.Checkbox("プレビュー(Preview)", ref isPreview)) {
-                    config.IsPreview = isPreview;
-                }
-                ImGui.Spacing();
-
                 var isEnabledInCombat = config.IsEnabledInCombat;
                 if (ImGui.Checkbox("戦闘時のみ有効(Enable Only In Combat)", ref isEnabledInCombat)) {
                     config.IsEnabledInCombat = isEnabledInCombat;
@@ -331,8 +325,6 @@ namespace RaidMitigationRecaster.Service {
         }
 
         internal static bool IsChangedPartyList(ref uint localPlayerClassJobId, ref IPartyList localPartyList) {
-            // TODO
-
             // in combat
             if (DalamudService.Condition[ConditionFlag.InCombat]) return false;
 
@@ -358,21 +350,31 @@ namespace RaidMitigationRecaster.Service {
                 // party => get ins partylist
                 var instancePartyList = DalamudService.PartyList;
 
-                // compare local to instance
-                if(localPartyList.Count() != instancePartyList.Count()) {
-                    // get instance, set local
+                if (localPlayerClassJobId != DalamudService.ClientState.LocalPlayer.ClassJob.Id) {
                     localPartyList = instancePartyList;
+                    localPlayerClassJobId = DalamudService.ClientState.LocalPlayer.ClassJob.Id;
                     PluginLog.Information("IsChangedPartyList.");
                     return true;
                 }
+
+                // compare local to instance
+                if (localPartyList.Count() != instancePartyList.Count()) {
+                    localPartyList = instancePartyList;
+                    localPlayerClassJobId = DalamudService.ClientState.LocalPlayer.ClassJob.Id;
+                    PluginLog.Information("IsChangedPartyList.");
+                    return true;
+                }
+
                 for (int i = 0; i < localPartyList.Count(); i++) {
-                    if (localPartyList[0].ObjectId != instancePartyList[0].ObjectId || localPartyList[0].ClassJob.Id != instancePartyList[0].ClassJob.Id) {
-                        // get instance, set local
+                    if (localPartyList[i].ObjectId != instancePartyList[i].ObjectId ||
+                        localPartyList[i].ClassJob.Id != instancePartyList[i].ClassJob.Id) {
                         localPartyList = instancePartyList;
+                        localPlayerClassJobId = DalamudService.ClientState.LocalPlayer.ClassJob.Id;
                         PluginLog.Information("IsChangedPartyList.");
                         return true;
                     }
                 }
+
                 return false;
             }
         }
@@ -437,11 +439,10 @@ namespace RaidMitigationRecaster.Service {
                     }
                 }
             }
-            // PluginLog.Information("UpdateTimers.");
         }
 
         // --- Debug -----------------------------------
-        internal static void DrawDebugWindow(ref Config config) {
+        internal static void DrawDebugWindow(ref IPartyList localPartyList, ref Config config) {
             PlayerCharacter localPlayer = DalamudService.ClientState.LocalPlayer;
             if (ImGui.Begin("[DBG]Statuses", ImGuiWindowFlags.AlwaysAutoResize)) {
                 var playerStatuses = localPlayer.StatusList.Where(s => s.StatusId != 0).ToList();
@@ -469,17 +470,31 @@ namespace RaidMitigationRecaster.Service {
 
                 ImGui.Separator();
 
-                var partyList = DalamudService.PartyList;
-                ImGui.Text("PartyList.Count: " + partyList.Count);
-                if (partyList.Count != 0) {
-                    foreach (var i in Enumerable.Range(0, partyList.Count)) {
-                        ImGui.Text("ObjectId[" + i.ToString() + "]: " + partyList[i].ObjectId.ToString());
-                        ImGui.Text("Name[" + i.ToString() + "]: " + partyList[i].Name);
-                        ImGui.Text("ClassJob.Id[" + i.ToString() + "]: " + partyList[i].ClassJob.Id.ToString());
-                        ImGui.Text("ClassJob.Name[" + i.ToString() + "]: " + Enum.GetName(typeof(JobIds), partyList[i].ClassJob.Id));
+                ImGui.Text("LocalPartyList.Count: " + localPartyList.Count);
+                if (localPartyList.Count != 0) {
+                    foreach (var i in Enumerable.Range(0, localPartyList.Count)) {
+                        ImGui.Text("LocalObjectId[" + i.ToString() + "]: " + localPartyList[i].ObjectId.ToString());
+                        ImGui.Text("LocalName[" + i.ToString() + "]: " + localPartyList[i].Name);
+                        ImGui.Text("LocalClassJob.Id[" + i.ToString() + "]: " + localPartyList[i].ClassJob.Id.ToString());
+                        ImGui.Text("LocalClassJob.Name[" + i.ToString() + "]: " + Enum.GetName(typeof(JobIds), localPartyList[i].ClassJob.Id));
                         ImGui.Text("");
                     }
                 }
+
+                ImGui.Separator();
+
+                var instancePartyList = DalamudService.PartyList;
+                ImGui.Text("InstancePartyList.Count: " + instancePartyList.Count);
+                if (instancePartyList.Count != 0) {
+                    foreach (var i in Enumerable.Range(0, instancePartyList.Count)) {
+                        ImGui.Text("InstanceObjectId[" + i.ToString() + "]: " + instancePartyList[i].ObjectId.ToString());
+                        ImGui.Text("InstanceName[" + i.ToString() + "]: " + instancePartyList[i].Name);
+                        ImGui.Text("InstanceClassJob.Id[" + i.ToString() + "]: " + instancePartyList[i].ClassJob.Id.ToString());
+                        ImGui.Text("InstanceClassJob.Name[" + i.ToString() + "]: " + Enum.GetName(typeof(JobIds), instancePartyList[i].ClassJob.Id));
+                        ImGui.Text("");
+                    }
+                }
+
 
                 ImGui.End();
             }
