@@ -385,14 +385,10 @@ namespace RaidMitigationRecaster.Service {
             var instancePartyList = DalamudService.PartyList;
             var partyList = new List<Dalamud.Game.ClientState.Party.PartyMember>();
 
-            // Update Wait
             RaptureUiDataModule* raptureUiDataModule = RaptureUiDataModule.Instance();
-            ushort[] tankOrder = new ushort[16] { 3, 32, 37, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-            // raptureUiDataModule -> PartyListTankOrder();
-            ushort[] healerOrder = new ushort[16] { 6, 33, 28, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-            // raptureUiDataModule->PartyListHealerOrder();
-            ushort[] dpsOrder = new ushort[16] { 34, 2, 39, 4, 29, 5, 31, 38, 7, 26, 35, 36, 0, 0, 0, 0 };
-            // raptureUiDataModule->PartyListDpsOrder();
+            var tankOrder = raptureUiDataModule->PartyListTankOrder;
+            var healerOrder = raptureUiDataModule->PartyListHealerOrder;
+            var dpsOrder = raptureUiDataModule->PartyListDpsOrder;
 
             // me
             var p = instancePartyList.Where(ip => ip.ObjectId == localPlayer.ObjectId).FirstOrDefault();
@@ -412,9 +408,9 @@ namespace RaidMitigationRecaster.Service {
                                      .ToList()
                                      .ForEach(partyList.Add);
                 } else if (partyRoles.DPS == i) {
-                    instancePartyList.Where(ip => (PartyOrderHelper.RoleForJob(ip.ClassJob.Id) == JobRoles.DPSMelee  ||
+                    instancePartyList.Where(ip => (PartyOrderHelper.RoleForJob(ip.ClassJob.Id) == JobRoles.DPSMelee ||
                                                    PartyOrderHelper.RoleForJob(ip.ClassJob.Id) == JobRoles.DPSRanged ||
-                                                   PartyOrderHelper.RoleForJob(ip.ClassJob.Id) == JobRoles.DPSCaster)&&
+                                                   PartyOrderHelper.RoleForJob(ip.ClassJob.Id) == JobRoles.DPSCaster) &&
                                             ip.ObjectId != localPlayer.ObjectId)
                                      .OrderBy(ip => ConvertOrderArrayToList(dpsOrder).IndexOf(ip.ClassJob.Id))
                                      .ToList()
@@ -424,9 +420,9 @@ namespace RaidMitigationRecaster.Service {
             return partyList;
         }
 
-        private static List<uint> ConvertOrderArrayToList(ushort[] arrayOrder) {
+        private unsafe static List<uint> ConvertOrderArrayToList(ushort* arrayOrder) {
             var listOrder = new List<uint>();
-            for (var i = 0; i < arrayOrder.Length; i++) {
+            for (var i = 0; i < 16; i++) {
                 if (arrayOrder[i] == 0) break;
                 ushort order = arrayOrder[i];
                 switch (order) {
@@ -520,6 +516,27 @@ namespace RaidMitigationRecaster.Service {
                     ImGui.Text("partyRoles.Healer: " + partyRoles.Healer.ToString());
                     ImGui.Text("partyRoles.Tank: " + partyRoles.Tank.ToString());
                 }
+
+                if (ImGui.CollapsingHeader("partyListOrder")) {
+                    RaptureUiDataModule* raptureUiDataModule = RaptureUiDataModule.Instance();
+                    var Order = ConvertOrderArrayToList(raptureUiDataModule->PartyListTankOrder);
+                    for (int i = 0; i < Order.Count; i++) {
+                        ImGui.Text("JobId: " + Order[i].ToString());
+                    }
+                    ImGui.Separator();
+
+                    Order = ConvertOrderArrayToList(raptureUiDataModule->PartyListHealerOrder);
+                    for (int i = 0; i < Order.Count; i++) {
+                        ImGui.Text("JobId: " + Order[i].ToString());
+                    }
+                    ImGui.Separator();
+
+                    Order = ConvertOrderArrayToList(raptureUiDataModule->PartyListDpsOrder);
+                    for (int i = 0; i < Order.Count; i++) {
+                        ImGui.Text("JobId: " + Order[i].ToString());
+                    }
+                }
+
 
                 ImGui.End();
             }
