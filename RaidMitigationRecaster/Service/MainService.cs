@@ -383,38 +383,22 @@ namespace RaidMitigationRecaster.Service {
         private unsafe static List<Dalamud.Game.ClientState.Party.PartyMember> GetAndSortPartyList() {
             var localPlayer = DalamudService.ClientState.LocalPlayer;
             var instancePartyList = DalamudService.PartyList;
-            var partyList = new List<Dalamud.Game.ClientState.Party.PartyMember>();
-
-            RaptureUiDataModule* raptureUiDataModule = RaptureUiDataModule.Instance();
-            var tankOrder = raptureUiDataModule->PartyListTankOrder;
-            var healerOrder = raptureUiDataModule->PartyListHealerOrder;
-            var dpsOrder = raptureUiDataModule->PartyListDpsOrder;
-
-            // me
-            var p = instancePartyList.Where(ip => ip.ObjectId == localPlayer.ObjectId).FirstOrDefault();
-            partyList.Add(p);
+            var raptureUiDataModule = RaptureUiDataModule.Instance();
+            var partyList = new List<Dalamud.Game.ClientState.Party.PartyMember> { instancePartyList.FirstOrDefault(ip => ip.ObjectId == localPlayer.ObjectId) };
 
             // sort party member and add in list
             var partyRoles = PartyOrderHelper.GetPartyRoles();
+
             for (int i = 0; i < 3; i++) {
                 if (partyRoles.Tank == i) {
-                    instancePartyList.Where(ip => PartyOrderHelper.RoleForJob(ip.ClassJob.Id) == JobRoles.Tank && ip.ObjectId != localPlayer.ObjectId)
-                                     .OrderBy(ip => ConvertOrderArrayToList(tankOrder).IndexOf(ip.ClassJob.Id))
-                                     .ToList()
-                                     .ForEach(partyList.Add);
+                    var ip = instancePartyList.Where(ip => PartyOrderHelper.RoleForJob(ip.ClassJob.Id) == JobRoles.Tank && ip.ObjectId != localPlayer.ObjectId).ToList();
+                    ConvertOrderArrayToList(raptureUiDataModule->PartyListTankOrder).ForEach(order => { ip.Where(ip => ip.ClassJob.Id == order).ToList().ForEach(partyList.Add); });
                 } else if (partyRoles.Healer == i) {
-                    instancePartyList.Where(ip => PartyOrderHelper.RoleForJob(ip.ClassJob.Id) == JobRoles.Healer && ip.ObjectId != localPlayer.ObjectId)
-                                     .OrderBy(ip => ConvertOrderArrayToList(dpsOrder).IndexOf(ip.ClassJob.Id))
-                                     .ToList()
-                                     .ForEach(partyList.Add);
+                    var ip = instancePartyList.Where(ip => PartyOrderHelper.RoleForJob(ip.ClassJob.Id) == JobRoles.Healer && ip.ObjectId != localPlayer.ObjectId).ToList();
+                    ConvertOrderArrayToList(raptureUiDataModule->PartyListHealerOrder).ForEach(order => { ip.Where(ip => ip.ClassJob.Id == order).ToList().ForEach(partyList.Add); });
                 } else if (partyRoles.DPS == i) {
-                    instancePartyList.Where(ip => (PartyOrderHelper.RoleForJob(ip.ClassJob.Id) == JobRoles.DPSMelee ||
-                                                   PartyOrderHelper.RoleForJob(ip.ClassJob.Id) == JobRoles.DPSRanged ||
-                                                   PartyOrderHelper.RoleForJob(ip.ClassJob.Id) == JobRoles.DPSCaster) &&
-                                            ip.ObjectId != localPlayer.ObjectId)
-                                     .OrderBy(ip => ConvertOrderArrayToList(dpsOrder).IndexOf(ip.ClassJob.Id))
-                                     .ToList()
-                                     .ForEach(partyList.Add);
+                    var ip = instancePartyList.Where(ip => PartyOrderHelper.RoleForJob(ip.ClassJob.Id) >= JobRoles.DPSMelee && PartyOrderHelper.RoleForJob(ip.ClassJob.Id) <= JobRoles.DPSCaster && ip.ObjectId != localPlayer.ObjectId).ToList();
+                    ConvertOrderArrayToList(raptureUiDataModule->PartyListDpsOrder).ForEach(order => { ip.Where(ip => ip.ClassJob.Id == order).ToList().ForEach(partyList.Add); });
                 }
             }
             return partyList;
@@ -449,6 +433,9 @@ namespace RaidMitigationRecaster.Service {
                         break;
                     case (ushort)JobIds.THM:
                         order = (ushort)JobIds.BLM;
+                        break;
+                    case (ushort)JobIds.ACN:
+                        order = (ushort)JobIds.SMN;
                         break;
                 }
                 listOrder.Add(order);

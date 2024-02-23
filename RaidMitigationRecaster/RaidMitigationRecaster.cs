@@ -30,8 +30,8 @@ namespace RaidMitigationRecaster {
         public bool isPartyListChanged = false;
         public IDalamudTextureWrap imageBlackOut;
 
-        bool isDebug = true;
-        // bool isDebug = false;
+        // bool isDebug = true;
+        bool isDebug = false;
 
         // user constants
         public static float ImageSize => 76f;
@@ -78,7 +78,7 @@ namespace RaidMitigationRecaster {
 
                 if (!config.IsEnabled) return;
 
-                MainService.DrawDebugWindow(ref config);
+                if(isDebug) MainService.DrawDebugWindow(ref config);
 
                 MainService.UpdateTimers(actions, ref Timers);
 
