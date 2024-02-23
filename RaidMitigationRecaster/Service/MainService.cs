@@ -24,9 +24,25 @@ using Dalamud.Game.ClientState.Statuses;
 using Dalamud.Logging;
 using Lumina.Excel.GeneratedSheets2;
 using Dalamud.Interface.Internal;
+using Dalamud.Game.ClientState.Party;
+using Dalamud.Game.Config;
+using Dalamud.Utility;
+using FFXIVClientStructs.FFXIV.Client.Game.Group;
+using static FFXIVClientStructs.FFXIV.Client.UI.AddonPartyList;
+using FFXIVClientStructs.FFXIV.Client.UI.Misc;
+using RaidMitigationRecaster.Enums;
+using System.Data;
+using FFXIVClientStructs.FFXIV.Client.System.Framework;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
+using System.Runtime.InteropServices;
+using Dalamud.Utility.Signatures;
+using System.Reflection.Emit;
+using System.Reflection.Metadata.Ecma335;
 
 namespace RaidMitigationRecaster.Service {
     internal class MainService {
+        private static int? roleFirstOrder;
+
         internal static void DrawConfigWindow(ref Config config, ref bool isConfigOpen) {
             if (ImGui.Begin(RaidMitigationRecaster.Name + " Config", ref isConfigOpen, ImGuiWindowFlags.AlwaysAutoResize)) {
                 // ImGui.SetWindowSize(new Vector2(350, 500));
@@ -46,86 +62,91 @@ namespace RaidMitigationRecaster.Service {
                 ImGui.Separator();
                 ImGui.Spacing();
 
-                ImGui.Text("X座標のオフセット(X Offset)");
-                var offsetX = config.OffsetX;
-                ImGui.SetNextItemWidth(200f);
-                if (ImGui.DragFloat(" ", ref offsetX, 0.1f)) {
-                    config.OffsetX = offsetX;
-                }
-                ImGui.Spacing();
+                if (ImGui.CollapsingHeader("UI設定(UI Settings)")) {
 
-                ImGui.Text("Y座標のオフセット(Y Offset)");
-                var offsetY = config.OffsetY;
-                ImGui.SetNextItemWidth(200f);
-                if (ImGui.DragFloat("  ", ref offsetY, 0.1f)) {
-                    config.OffsetY = offsetY;
-                }
-                ImGui.Spacing();
+                    ImGui.Text("X座標のオフセット(X Offset)");
+                    var offsetX = config.OffsetX;
+                    ImGui.SetNextItemWidth(200f);
+                    if (ImGui.DragFloat("", ref offsetX, 0.1f)) {
+                        config.OffsetX = offsetX;
+                    }
+                    ImGui.Spacing();
 
-                ImGui.Text("アイコンの拡大率(Icon Scale)");
-                var size = config.Size;
-                ImGui.SetNextItemWidth(200f);
-                if (ImGui.DragFloat("   ", ref size, 0.5f, 1, 300)) {
-                    config.Size = size;
-                }
-                ImGui.Spacing();
+                    ImGui.Text("Y座標のオフセット(Y Offset)");
+                    var offsetY = config.OffsetY;
+                    ImGui.SetNextItemWidth(200f);
+                    if (ImGui.DragFloat("  ", ref offsetY, 0.1f)) {
+                        config.OffsetY = offsetY;
+                    }
+                    ImGui.Spacing();
 
-                ImGui.Text("アイコンの横間隔(Icon Padding X)");
-                var paddingX = config.PaddingX;
-                ImGui.SetNextItemWidth(200f);
-                if (ImGui.DragFloat("     ", ref paddingX, 0.1f, -100, 100)) {
-                    config.PaddingX = paddingX;
-                }
-                ImGui.Spacing();
+                    ImGui.Text("アイコンの拡大率(Icon Scale)");
+                    var size = config.Size;
+                    ImGui.SetNextItemWidth(200f);
+                    if (ImGui.DragFloat("   ", ref size, 0.5f, 1, 300)) {
+                        config.Size = size;
+                    }
+                    ImGui.Spacing();
 
-                ImGui.Text("アイコンの縦間隔(Icon Padding Y)");
-                var paddingY = config.PaddingY;
-                ImGui.SetNextItemWidth(200f);
-                if (ImGui.DragFloat("       ", ref paddingY, 0.1f, -100, 100)) {
-                    config.PaddingY = paddingY;
-                }
-                ImGui.Spacing();
+                    ImGui.Text("アイコンの横間隔(Icon Padding X)");
+                    var paddingX = config.PaddingX;
+                    ImGui.SetNextItemWidth(200f);
+                    if (ImGui.DragFloat("     ", ref paddingX, 0.1f, -100, 100)) {
+                        config.PaddingX = paddingX;
+                    }
+                    ImGui.Spacing();
 
-                ImGui.Text("フォントの拡大率(Font Scale)");
-                var fontScale = config.FontScale;
-                ImGui.SetNextItemWidth(200f);
-                if (ImGui.DragFloat("        ", ref fontScale, 0.5f, 1, 300)) {
-                    config.FontScale = fontScale;
-                }
-                ImGui.Spacing();
+                    ImGui.Text("アイコンの縦間隔(Icon Padding Y)");
+                    var paddingY = config.PaddingY;
+                    ImGui.SetNextItemWidth(200f);
+                    if (ImGui.DragFloat("       ", ref paddingY, 0.1f, -100, 100)) {
+                        config.PaddingY = paddingY;
+                    }
+                    ImGui.Spacing();
 
-                ImGui.Text("フォント X座標のオフセット(Font X Offset)");
-                var fontOffsetX = config.FontOffsetX;
-                ImGui.SetNextItemWidth(200f);
-                if (ImGui.DragFloat("         ", ref fontOffsetX, 0.1f)) {
-                    config.FontOffsetX = fontOffsetX;
-                }
-                ImGui.Spacing();
+                    ImGui.Text("フォントの拡大率(Font Scale)");
+                    var fontScale = config.FontScale;
+                    ImGui.SetNextItemWidth(200f);
+                    if (ImGui.DragFloat("        ", ref fontScale, 0.5f, 1, 300)) {
+                        config.FontScale = fontScale;
+                    }
+                    ImGui.Spacing();
 
-                ImGui.Text("フォント Y座標のオフセット(Font Y Offset)");
-                var fontOffsetY = config.FontOffsetY;
-                ImGui.SetNextItemWidth(200f);
-                if (ImGui.DragFloat("           ", ref fontOffsetY, 0.1f)) {
-                    config.FontOffsetY = fontOffsetY;
-                }
-                ImGui.Spacing();
+                    ImGui.Text("フォント X座標のオフセット(Font X Offset)");
+                    var fontOffsetX = config.FontOffsetX;
+                    ImGui.SetNextItemWidth(200f);
+                    if (ImGui.DragFloat("         ", ref fontOffsetX, 0.1f)) {
+                        config.FontOffsetX = fontOffsetX;
+                    }
+                    ImGui.Spacing();
 
-                var isLeftAligin = config.IsLeftAligin;
-                if (ImGui.Checkbox("アイコンを左揃えにする(Icons Left Aligin)", ref isLeftAligin)) {
-                    config.IsLeftAligin = isLeftAligin;
+                    ImGui.Text("フォント Y座標のオフセット(Font Y Offset)");
+                    var fontOffsetY = config.FontOffsetY;
+                    ImGui.SetNextItemWidth(200f);
+                    if (ImGui.DragFloat("           ", ref fontOffsetY, 0.1f)) {
+                        config.FontOffsetY = fontOffsetY;
+                    }
+                    ImGui.Spacing();
+
+                    var isLeftAligin = config.IsLeftAligin;
+                    if (ImGui.Checkbox("アイコンを左揃えにする(Icons Left Aligin)", ref isLeftAligin)) {
+                        config.IsLeftAligin = isLeftAligin;
+                    }
+                    ImGui.Spacing();
                 }
-                ImGui.Spacing();
 
                 ImGui.Separator();
                 ImGui.Spacing();
 
+
+                ImGui.Spacing();
                 config.Font = GameFontFamilyAndSize.Axis36;
 
-                ImGui.SetCursorPosX(180f);
                 if (ImGui.Button("閉じる(Close)")) {
                     isConfigOpen = false;
                     DalamudService.PluginInterface.SavePluginConfig(config);
                 }
+
                 ImGui.End();
             }
 
@@ -134,15 +155,7 @@ namespace RaidMitigationRecaster.Service {
             }
         }
 
-        internal static void DrawPleaviewWindow(List<ActionModel.Action> actions, Config config) {
-
-        }
-
-        internal static void DrawMainWindow(
-            ref List<TimerModel.Timer> ListTimer,
-            Config config,
-            IDalamudTextureWrap imageBlackOut) {
-
+        internal static void DrawMainWindow(ref List<TimerModel.Timer> ListTimer, Config config, IDalamudTextureWrap imageBlackOut) {
             var isBegin = false;
 
             try {
@@ -156,7 +169,14 @@ namespace RaidMitigationRecaster.Service {
 
                 ImGui.PushFont(DalamudService.PluginInterface.UiBuilder.GetGameFontHandle(new GameFontStyle(config.Font.Value)).ImFont);
 
-                if (ImGui.Begin("MainWindow", ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoBackground)) {
+                if (ImGui.Begin("MainWindow",
+                    ImGuiWindowFlags.NoInputs |
+                    ImGuiWindowFlags.NoMove |
+                    ImGuiWindowFlags.NoScrollbar |
+                    ImGuiWindowFlags.NoBackground |
+                    ImGuiWindowFlags.NoTitleBar |
+                    ImGuiWindowFlags.AlwaysAutoResize)) {
+
                     isBegin = true;
                     var index = 0;
                     var imageSize = (RaidMitigationRecaster.ImageSize * config.Size / 100);
@@ -169,21 +189,16 @@ namespace RaidMitigationRecaster.Service {
                                 if (index == ListTimer.Count) break;
                                 var timer = ListTimer[index];
                                 if (timer.IsBuff) {
-                                    if (DalamudService.PartyList.Count == 0) {
-                                        // solo
-                                        var statuses = DalamudService.ClientState.LocalPlayer.StatusList;
-                                        var status = statuses == null ? null : statuses.Where(s => s.StatusId == timer.StatusId).FirstOrDefault();
-                                        DrawMainWindow(ref timer, config, imageSize, col, row, status, imageBlackOut);
-                                    } else {
-                                        // party
-                                        var statuses = DalamudService.PartyList.Where(p => p.ObjectId == timer.ObjectId).FirstOrDefault().Statuses;
-                                        var status = statuses == null ? null : statuses.Where(s => s.StatusId == timer.StatusId).FirstOrDefault();
-                                        DrawMainWindow(ref timer, config, imageSize, col, row, status, imageBlackOut);
-                                    }
+                                    var statuses =
+                                    DalamudService.PartyList.Count == 0 ?
+                                        DalamudService.ClientState.LocalPlayer.StatusList :
+                                        DalamudService.PartyList.Where(p => p.ObjectId == timer.ObjectId).FirstOrDefault().Statuses;
+                                    var status = statuses == null ? null : statuses.Where(s => s.StatusId == timer.StatusId).FirstOrDefault();
+                                    DrawImage(ref timer, config, imageSize, col, row, status, imageBlackOut);
                                 } else {
                                     var statuses = GetTargetStatuses();
-                                    var status = statuses == null ? null : statuses.Where(s => s.StatusId == timer.StatusId).FirstOrDefault();
-                                    DrawMainWindow(ref timer, config, imageSize, col, row, status, imageBlackOut);
+                                    var status = statuses == null ? null : statuses.Where(s => s.StatusId == timer.StatusId && s.SourceObject.ObjectId == timer.ObjectId).FirstOrDefault();
+                                    DrawImage(ref timer, config, imageSize, col, row, status, imageBlackOut);
                                 }
                                 index++;
                                 if (index != ListTimer.Count && ListTimer[index].ObjectId != ListTimer[index - 1].ObjectId) break;
@@ -196,21 +211,15 @@ namespace RaidMitigationRecaster.Service {
                                 if (index == ListTimer.Count) break;
                                 var timer = ListTimer[index];
                                 if (timer.IsBuff) {
-                                    if(DalamudService.PartyList.Count == 0) {
-                                        // solo
-                                        var statuses = DalamudService.ClientState.LocalPlayer.StatusList;
-                                        var status = statuses == null ? null : statuses.Where(s => s.StatusId == timer.StatusId).FirstOrDefault();
-                                        DrawMainWindow(ref timer, config, imageSize, col, row, status, imageBlackOut);
-                                    } else {
-                                        // party
-                                        var statuses = DalamudService.PartyList.Where(p => p.ObjectId == timer.ObjectId).FirstOrDefault().Statuses;
-                                        var status = statuses == null ? null : statuses.Where(s => s.StatusId == timer.StatusId).FirstOrDefault();
-                                        DrawMainWindow(ref timer, config, imageSize, col, row, status, imageBlackOut);
-                                    }
+                                    var statuses = DalamudService.PartyList.Count == 0 ?
+                                        DalamudService.ClientState.LocalPlayer.StatusList :
+                                        DalamudService.PartyList.Where(p => p.ObjectId == timer.ObjectId).FirstOrDefault().Statuses;
+                                    var status = statuses == null ? null : statuses.Where(s => s.StatusId == timer.StatusId).FirstOrDefault();
+                                    DrawImage(ref timer, config, imageSize, col, row, status, imageBlackOut);
                                 } else {
                                     var statuses = GetTargetStatuses();
-                                    var status = statuses == null ? null : statuses.Where(s => s.StatusId == timer.StatusId).FirstOrDefault();
-                                    DrawMainWindow(ref timer, config, imageSize, col, row, status, imageBlackOut);
+                                    var status = statuses == null ? null : statuses.Where(s => s.StatusId == timer.StatusId && s.SourceObject.ObjectId == timer.ObjectId).FirstOrDefault();
+                                    DrawImage(ref timer, config, imageSize, col, row, status, imageBlackOut);
                                 }
                                 index++;
                                 if (index != ListTimer.Count && ListTimer[index].ObjectId != ListTimer[index - 1].ObjectId) break;
@@ -224,22 +233,14 @@ namespace RaidMitigationRecaster.Service {
             } catch (Exception e) {
                 PluginLog.Error(e.Message + "\n" + e.StackTrace);
             } finally {
-                if(isBegin) {
+                if (isBegin) {
                     ImGui.PopFont();
                     ImGui.End();
                 }
             }
         }
 
-        internal static void DrawMainWindow(
-            ref TimerModel.Timer timer,
-            Config config,
-            float imageSize,
-            int col,
-            int row,
-            Dalamud.Game.ClientState.Statuses.Status? status,
-            IDalamudTextureWrap imageBlackOut) {
-
+        internal static void DrawImage(ref TimerModel.Timer timer, Config config, float imageSize, int col, int row, Dalamud.Game.ClientState.Statuses.Status? status, IDalamudTextureWrap imageBlackOut) {
             var cursolPosX = col * (imageSize + config.PaddingX) + 10f;
             var cursolPosY = row * (imageSize + config.PaddingY);
 
@@ -250,15 +251,11 @@ namespace RaidMitigationRecaster.Service {
             var dispTime = string.Empty;
             var fontColor = RaidMitigationRecaster.Black;
 
-            // PluginLog.Information("Stopwatch IsRunnning; " + timer.StopWatch.IsRunning.ToString());
-
             if (status != null) {
                 // effect time
                 fontColor = RaidMitigationRecaster.Red;
                 if (!timer.StopWatch.IsRunning) {
-                    // effect start
                     timer.StopWatch.Start();
-                    PluginLog.Information("Stopwatch Start;");
                 }
                 dispTime = (timer.RecastTime - timer.StopWatch.Elapsed.TotalMilliseconds / 1000).ToString("#");
             } else {
@@ -268,7 +265,6 @@ namespace RaidMitigationRecaster.Service {
                     if (timer.RecastTime <= timer.StopWatch.Elapsed.TotalMilliseconds / 1000) {
                         timer.StopWatch.Stop();
                         timer.StopWatch.Reset();
-                        PluginLog.Information("Stopwatch Stop;");
                         dispTime = string.Empty;
                     } else {
                         // recasting
@@ -324,61 +320,6 @@ namespace RaidMitigationRecaster.Service {
             return null;
         }
 
-        internal static bool IsChangedPartyList(ref uint localPlayerClassJobId, ref IPartyList localPartyList) {
-            // in combat
-            if (DalamudService.Condition[ConditionFlag.InCombat]) return false;
-
-            // init?
-            if(localPartyList == null) {
-                localPartyList = DalamudService.PartyList;
-                localPlayerClassJobId = DalamudService.ClientState.LocalPlayer.ClassJob.Id;
-                PluginLog.Information("IsChangedPartyList.");
-                return true;
-            }
-
-            // solo?
-            if (localPartyList.Count == 0) {
-                // solo => is change job?
-                if (localPlayerClassJobId == null || (localPlayerClassJobId != DalamudService.ClientState.LocalPlayer.ClassJob.Id)) {
-                    localPlayerClassJobId = DalamudService.ClientState.LocalPlayer.ClassJob.Id;
-                    PluginLog.Information("IsChangedPartyList.");
-                    return true;
-                } else {
-                    return false;
-                }
-            } else {
-                // party => get ins partylist
-                var instancePartyList = DalamudService.PartyList;
-
-                if (localPlayerClassJobId != DalamudService.ClientState.LocalPlayer.ClassJob.Id) {
-                    localPartyList = instancePartyList;
-                    localPlayerClassJobId = DalamudService.ClientState.LocalPlayer.ClassJob.Id;
-                    PluginLog.Information("IsChangedPartyList.");
-                    return true;
-                }
-
-                // compare local to instance
-                if (localPartyList.Count() != instancePartyList.Count()) {
-                    localPartyList = instancePartyList;
-                    localPlayerClassJobId = DalamudService.ClientState.LocalPlayer.ClassJob.Id;
-                    PluginLog.Information("IsChangedPartyList.");
-                    return true;
-                }
-
-                for (int i = 0; i < localPartyList.Count(); i++) {
-                    if (localPartyList[i].ObjectId != instancePartyList[i].ObjectId ||
-                        localPartyList[i].ClassJob.Id != instancePartyList[i].ClassJob.Id) {
-                        localPartyList = instancePartyList;
-                        localPlayerClassJobId = DalamudService.ClientState.LocalPlayer.ClassJob.Id;
-                        PluginLog.Information("IsChangedPartyList.");
-                        return true;
-                    }
-                }
-
-                return false;
-            }
-        }
-
         private static List<Dalamud.Game.ClientState.Statuses.Status> GetTargetStatuses() {
             GameObject target = DalamudService.TargetManager.Target;
             if (target is Dalamud.Game.ClientState.Objects.Types.BattleChara b) {
@@ -387,41 +328,39 @@ namespace RaidMitigationRecaster.Service {
             return null;
         }
 
-        private static unsafe bool IsEnabledHotbar(AddonActionBarBase* a) {
-            if (a is null) return false;
-            if (!((AtkUnitBase*)a)->IsVisible) return false;
-            return true;
-        }
-
-        public static void UpdateTimers(
-            List<ActionModel.Action> actions,
-            uint localPlayerClassJobId,
-            IPartyList localPartyList,
-            ref List<TimerModel.Timer> timers) {
+        public static void UpdateTimers(List<ActionModel.Action> actions, ref List<TimerModel.Timer> timers) {
+            // in combat
+            if (DalamudService.Condition[ConditionFlag.InCombat]) return;
 
             timers = new List<TimerModel.Timer>();
 
-            if (localPartyList.Count == 0) {
+            if (DalamudService.PartyList.Count == 0) {
                 // solo
-                var action = actions.Where(a => a.ClassJobId == localPlayerClassJobId).ToList();
-                foreach (var i in Enumerable.Range(0, action.Count())) {
+                var localPlayer = DalamudService.ClientState.LocalPlayer;
+                var action = actions.Where(a => a.ClassJobId == localPlayer.ClassJob.Id).ToList();
+
+                foreach (var j in Enumerable.Range(0, action.Count())) {
                     TimerModel.Timer timer = new TimerModel.Timer();
-                    timer.ClassJobId = action[i].ClassJobId;
-                    timer.ActionId = action[i].ActionId;
-                    timer.StatusId = action[i].StatusId;
-                    timer.IsBuff = action[i].IsBuff;
-                    timer.IsThrow = action[i].IsThrow;
-                    timer.RecastTime = action[i].RecastTime;
-                    timer.Image = action[i].Image;
-                    timer.ObjectId = DalamudService.ClientState.LocalPlayer.ObjectId;
+                    timer.ClassJobId = action[j].ClassJobId;
+                    timer.ActionId = action[j].ActionId;
+                    timer.StatusId = action[j].StatusId;
+                    timer.IsBuff = action[j].IsBuff;
+                    timer.IsThrow = action[j].IsThrow;
+                    timer.RecastTime = action[j].RecastTime;
+                    timer.Image = action[j].Image;
+                    timer.ObjectId = localPlayer.ObjectId;
                     timer.RemainingTime = 0f;
                     timer.StopWatch = new Stopwatch();
                     timers.Add(timer);
                 }
             } else {
                 // party
-                foreach (var i in Enumerable.Range(0, localPartyList.Count())) {
-                    var partyMember = localPartyList[i];
+                var partyList = GetAndSortPartyList();
+                if (partyList == null) return;
+
+                // update timer
+                foreach (var i in Enumerable.Range(0, partyList.Count())) {
+                    var partyMember = partyList[i];
                     var action = actions.Where(a => a.ClassJobId == partyMember.ClassJob.Id).ToList();
                     foreach (var j in Enumerable.Range(0, action.Count())) {
                         TimerModel.Timer timer = new TimerModel.Timer();
@@ -441,60 +380,146 @@ namespace RaidMitigationRecaster.Service {
             }
         }
 
+        private unsafe static List<Dalamud.Game.ClientState.Party.PartyMember> GetAndSortPartyList() {
+            var localPlayer = DalamudService.ClientState.LocalPlayer;
+            var instancePartyList = DalamudService.PartyList;
+            var partyList = new List<Dalamud.Game.ClientState.Party.PartyMember>();
+
+            // Update Wait
+            RaptureUiDataModule* raptureUiDataModule = RaptureUiDataModule.Instance();
+            ushort[] tankOrder = new ushort[16] { 3, 32, 37, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+            // raptureUiDataModule -> PartyListTankOrder();
+            ushort[] healerOrder = new ushort[16] { 6, 33, 28, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+            // raptureUiDataModule->PartyListHealerOrder();
+            ushort[] dpsOrder = new ushort[16] { 34, 2, 39, 4, 29, 5, 31, 38, 7, 26, 35, 36, 0, 0, 0, 0 };
+            // raptureUiDataModule->PartyListDpsOrder();
+
+            // me
+            var p = instancePartyList.Where(ip => ip.ObjectId == localPlayer.ObjectId).FirstOrDefault();
+            partyList.Add(p);
+
+            // sort party member and add in list
+            var partyRoles = PartyOrderHelper.GetPartyRoles();
+            for (int i = 0; i < 3; i++) {
+                if (partyRoles.Tank == i) {
+                    instancePartyList.Where(ip => PartyOrderHelper.RoleForJob(ip.ClassJob.Id) == JobRoles.Tank && ip.ObjectId != localPlayer.ObjectId)
+                                     .OrderBy(ip => ConvertOrderArrayToList(tankOrder).IndexOf(ip.ClassJob.Id))
+                                     .ToList()
+                                     .ForEach(partyList.Add);
+                } else if (partyRoles.Healer == i) {
+                    instancePartyList.Where(ip => PartyOrderHelper.RoleForJob(ip.ClassJob.Id) == JobRoles.Healer && ip.ObjectId != localPlayer.ObjectId)
+                                     .OrderBy(ip => ConvertOrderArrayToList(dpsOrder).IndexOf(ip.ClassJob.Id))
+                                     .ToList()
+                                     .ForEach(partyList.Add);
+                } else if (partyRoles.DPS == i) {
+                    instancePartyList.Where(ip => (PartyOrderHelper.RoleForJob(ip.ClassJob.Id) == JobRoles.DPSMelee  ||
+                                                   PartyOrderHelper.RoleForJob(ip.ClassJob.Id) == JobRoles.DPSRanged ||
+                                                   PartyOrderHelper.RoleForJob(ip.ClassJob.Id) == JobRoles.DPSCaster)&&
+                                            ip.ObjectId != localPlayer.ObjectId)
+                                     .OrderBy(ip => ConvertOrderArrayToList(dpsOrder).IndexOf(ip.ClassJob.Id))
+                                     .ToList()
+                                     .ForEach(partyList.Add);
+                }
+            }
+            return partyList;
+        }
+
+        private static List<uint> ConvertOrderArrayToList(ushort[] arrayOrder) {
+            var listOrder = new List<uint>();
+            for (var i = 0; i < arrayOrder.Length; i++) {
+                if (arrayOrder[i] == 0) break;
+                ushort order = arrayOrder[i];
+                switch (order) {
+                    case (ushort)JobIds.GLA:
+                        order = (ushort)JobIds.PLD;
+                        break;
+                    case (ushort)JobIds.MRD:
+                        order = (ushort)JobIds.WAR;
+                        break;
+                    case (ushort)JobIds.CNJ:
+                        order = (ushort)JobIds.WHM;
+                        break;
+                    case (ushort)JobIds.PGL:
+                        order = (ushort)JobIds.MNK;
+                        break;
+                    case (ushort)JobIds.LNC:
+                        order = (ushort)JobIds.DRG;
+                        break;
+                    case (ushort)JobIds.ROG:
+                        order = (ushort)JobIds.NIN;
+                        break;
+                    case (ushort)JobIds.ARC:
+                        order = (ushort)JobIds.BRD;
+                        break;
+                    case (ushort)JobIds.THM:
+                        order = (ushort)JobIds.BLM;
+                        break;
+                }
+                listOrder.Add(order);
+
+            }
+            return listOrder;
+        }
+
         // --- Debug -----------------------------------
-        internal static void DrawDebugWindow(ref IPartyList localPartyList, ref Config config) {
+        internal unsafe static void DrawDebugWindow(ref Config config) {
             PlayerCharacter localPlayer = DalamudService.ClientState.LocalPlayer;
             if (ImGui.Begin("[DBG]Statuses", ImGuiWindowFlags.AlwaysAutoResize)) {
                 var playerStatuses = localPlayer.StatusList.Where(s => s.StatusId != 0).ToList();
-                ImGui.Text("ObjectId: " + localPlayer.ObjectId.ToString());
-                ImGui.Text("ClassJobId: " + localPlayer.ClassJob.Id.ToString());
-                ImGui.Text("ClassJob: " + Enum.GetName(typeof(JobIds), localPlayer.ClassJob.Id));
-                ImGui.Text("statuses.count: " + playerStatuses.Count);
-                ImGui.Separator();
-                foreach (var i in Enumerable.Range(0, playerStatuses.Count)) {
-                    ImGui.Text("StatusId[" + i.ToString() + "]: " + playerStatuses[i].StatusId.ToString());
-                    ImGui.Text("RemainingTime[" + i.ToString() + "]: " + playerStatuses[i].RemainingTime.ToString("#"));
-                    ImGui.Text("");
-                }
-                ImGui.Separator();
 
-                var targetStatus = GetTargetStatuses();
-                if (targetStatus != null) {
-                    ImGui.Text("statuses.count: " + targetStatus.Count);
-                    foreach (var i in Enumerable.Range(0, targetStatus.Count)) {
-                        ImGui.Text("StatusId[" + i.ToString() + "]: " + targetStatus[i].StatusId.ToString());
-                        ImGui.Text("RemainingTime[" + i.ToString() + "]: " + targetStatus[i].RemainingTime.ToString("#"));
+                if (ImGui.CollapsingHeader("localplayer")) {
+                    ImGui.Text("ObjectId: " + localPlayer.ObjectId.ToString());
+                    ImGui.Text("ClassJobId: " + localPlayer.ClassJob.Id.ToString());
+                    ImGui.Text("ClassJob: " + Enum.GetName(typeof(JobIds), localPlayer.ClassJob.Id));
+                    ImGui.Text("statuses.count: " + playerStatuses.Count);
+                    ImGui.Separator();
+                    foreach (var i in Enumerable.Range(0, playerStatuses.Count)) {
+                        ImGui.Text("StatusId[" + i.ToString() + "]: " + playerStatuses[i].StatusId.ToString());
+                        ImGui.Text("RemainingTime[" + i.ToString() + "]: " + playerStatuses[i].RemainingTime.ToString("#"));
                         ImGui.Text("");
                     }
                 }
 
+
+                if (ImGui.CollapsingHeader("target")) {
+                    var targetStatus = GetTargetStatuses();
+                    if (targetStatus != null) {
+                        ImGui.Text("statuses.count: " + targetStatus.Count);
+                        foreach (var i in Enumerable.Range(0, targetStatus.Count)) {
+                            ImGui.Text("StatusId[" + i.ToString() + "]: " + targetStatus[i].StatusId.ToString());
+                            ImGui.Text("RemainingTime[" + i.ToString() + "]: " + targetStatus[i].RemainingTime.ToString("#"));
+                            ImGui.Text("");
+                        }
+                    }
+                }
                 ImGui.Separator();
 
-                ImGui.Text("LocalPartyList.Count: " + localPartyList.Count);
-                if (localPartyList.Count != 0) {
-                    foreach (var i in Enumerable.Range(0, localPartyList.Count)) {
-                        ImGui.Text("LocalObjectId[" + i.ToString() + "]: " + localPartyList[i].ObjectId.ToString());
-                        ImGui.Text("LocalName[" + i.ToString() + "]: " + localPartyList[i].Name);
-                        ImGui.Text("LocalClassJob.Id[" + i.ToString() + "]: " + localPartyList[i].ClassJob.Id.ToString());
-                        ImGui.Text("LocalClassJob.Name[" + i.ToString() + "]: " + Enum.GetName(typeof(JobIds), localPartyList[i].ClassJob.Id));
-                        ImGui.Text("");
+                var p = DalamudService.PartyList;
+                List<Dalamud.Game.ClientState.Party.PartyMember> partyList = new List<Dalamud.Game.ClientState.Party.PartyMember>();
+                if (p != null) {
+                    foreach (var i in Enumerable.Range(0, p.Count)) {
+                        var partyMember = p[i];
+                        partyList.Add(partyMember);
                     }
+                }
+
+                if (ImGui.CollapsingHeader("PartyMember")) {
+                    partyList.ForEach(p => {
+                        ImGui.Text("PartyMember.ObjectId: " + p.ObjectId.ToString());
+                        ImGui.Text("PartyMember.Name: " + p.Name);
+                        ImGui.Text("PartyMember.ClassJob: " + Enum.GetName(typeof(JobIds), p.ClassJob.Id));
+                        ImGui.Separator();
+                    });
                 }
 
                 ImGui.Separator();
 
-                var instancePartyList = DalamudService.PartyList;
-                ImGui.Text("InstancePartyList.Count: " + instancePartyList.Count);
-                if (instancePartyList.Count != 0) {
-                    foreach (var i in Enumerable.Range(0, instancePartyList.Count)) {
-                        ImGui.Text("InstanceObjectId[" + i.ToString() + "]: " + instancePartyList[i].ObjectId.ToString());
-                        ImGui.Text("InstanceName[" + i.ToString() + "]: " + instancePartyList[i].Name);
-                        ImGui.Text("InstanceClassJob.Id[" + i.ToString() + "]: " + instancePartyList[i].ClassJob.Id.ToString());
-                        ImGui.Text("InstanceClassJob.Name[" + i.ToString() + "]: " + Enum.GetName(typeof(JobIds), instancePartyList[i].ClassJob.Id));
-                        ImGui.Text("");
-                    }
+                if (ImGui.CollapsingHeader("partyRolesSort")) {
+                    var partyRoles = PartyOrderHelper.GetPartyRoles(partyList);
+                    ImGui.Text("partyRoles.DPS: " + partyRoles.DPS.ToString());
+                    ImGui.Text("partyRoles.Healer: " + partyRoles.Healer.ToString());
+                    ImGui.Text("partyRoles.Tank: " + partyRoles.Tank.ToString());
                 }
-
 
                 ImGui.End();
             }
@@ -528,6 +553,12 @@ namespace RaidMitigationRecaster.Service {
                 }
                 ImGui.End();
             }
+        }
+
+        private static unsafe bool IsEnabledHotbar(AddonActionBarBase* a) {
+            if (a is null) return false;
+            if (!((AtkUnitBase*)a)->IsVisible) return false;
+            return true;
         }
     }
 }

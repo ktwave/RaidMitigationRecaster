@@ -11,6 +11,9 @@ using RaidMitigationRecaster.Model;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Plugin.Services;
 using Dalamud.Interface.Internal;
+using Lumina.Excel.GeneratedSheets;
+using Dalamud.Utility.Signatures;
+using System.Reflection.Emit;
 
 namespace RaidMitigationRecaster {
     public unsafe class RaidMitigationRecaster : IDalamudPlugin {
@@ -24,8 +27,6 @@ namespace RaidMitigationRecaster {
         // user var
         public List<ActionModel.Action> actions;
         public List<TimerModel.Timer> Timers;
-        public uint localPlayerClassJobId;
-        public IPartyList localPartyList;
         public bool isPartyListChanged = false;
         public IDalamudTextureWrap imageBlackOut;
 
@@ -36,10 +37,10 @@ namespace RaidMitigationRecaster {
         public static float ImageSize => 76f;
         public static int MaxCol => 5;
         public static int MaxRow => 8;
-        public static Vector4 White => new Vector4(1f,1f,1f,1f);
+        public static Vector4 White => new Vector4(1f, 1f, 1f, 1f);
         public static Vector4 Red => new Vector4(1f, 0f, 0f, 1f);
-        public static Vector4 Black => new Vector4(0f,0f,0f,1f);
-
+        public static Vector4 Black => new Vector4(0f, 0f, 0f, 1f);
+        public static int offset = 0x4A8;
         public void Dispose() {
             DalamudService.PluginInterface.UiBuilder.Draw -= Draw;
             R = null;
@@ -54,11 +55,10 @@ namespace RaidMitigationRecaster {
             config = DalamudService.PluginInterface.GetPluginConfig() as Config ?? new Config();
 
             actions = ActionService.SetActions(config, pluginInterface);
-            // localPartyList = DalamudService.PartyList;
             var ImagePath = Path.Combine(pluginInterface.AssemblyLocation.Directory?.FullName!, "images\\blackout.png");
             imageBlackOut = pluginInterface.UiBuilder.LoadImage(ImagePath);
 
-            PluginLog.Information("["+Name+"] Initialize!!!");
+            PluginLog.Information("[" + Name + "] Initialize!!!");
 
             DalamudService.PluginInterface.UiBuilder.OpenConfigUi += delegate { isConfigOpen = true; };
             DalamudService.Framework.RunOnFrameworkThread(() => {
@@ -78,15 +78,14 @@ namespace RaidMitigationRecaster {
 
                 if (!config.IsEnabled) return;
 
-                isPartyListChanged = MainService.IsChangedPartyList(ref localPlayerClassJobId ,ref localPartyList);
-                if (isPartyListChanged) MainService.UpdateTimers(actions, localPlayerClassJobId, localPartyList, ref Timers);
+                MainService.DrawDebugWindow(ref config);
+
+                MainService.UpdateTimers(actions, ref Timers);
 
                 if (config.IsEnabledInCombat && !DalamudService.Condition[ConditionFlag.InCombat]) return;
 
-                // if (isDebug) MainService.DrawDebugWindow(ref localPartyList, ref config); //MainService.DrawDebugHotbarInfo();
+                if (Timers != null) MainService.DrawMainWindow(ref Timers, config, imageBlackOut);
 
-                if(Timers != null) MainService.DrawMainWindow(ref Timers, config, imageBlackOut);
-                
             } catch (Exception e) {
                 PluginLog.Error(e.Message + "\n" + e.StackTrace);
             } finally {

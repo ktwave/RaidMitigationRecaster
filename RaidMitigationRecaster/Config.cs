@@ -1,6 +1,7 @@
 ﻿using Dalamud.Configuration;
 using Dalamud.Interface.GameFonts;
 using Dalamud.Plugin;
+using RaidMitigationRecaster.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,7 +26,6 @@ namespace RaidMitigationRecaster {
         public float FontScale { get; set; } = 100;
         public float FontOffsetX { get; set; } = 0;
         public float FontOffsetY { get; set; } = 0;
-
         public GameFontFamilyAndSize? Font = null;
 
         public void Save() {

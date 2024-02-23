@@ -8,27 +8,52 @@ namespace RaidMitigationRecaster.Enums
 {
     public enum JobIds : uint
     {
+        GLA = 1,
+        MRD = 3,
         PLD = 19,
-        MNK = 20,
         WAR = 21,
-        DRG = 22,
-        BRD = 23,
-        WHM = 24,
-        BLM = 25,
-
-        SMN = 27,
-        SCH = 28,
-
-        NIN = 30,
-        MCH = 31,
         DRK = 32,
-        AST = 33,
-        SAM = 34,
-        RDM = 35,
-
         GNB = 37,
-        DNC = 38,
+
+        CNJ = 6,
+        WHM = 24,
+        SCH = 28,
+        AST = 33,
+        SGE = 40,
+
+        PGL = 2,
+        LNC = 4,
+        ROG = 29,
+        MNK = 20,
+        DRG = 22,
+        NIN = 30,
+        SAM = 34,
         RPR = 39,
-        SGE = 40
+
+        ARC = 5,
+        BRD = 23,
+        MCH = 31,
+        DNC = 38,
+
+        THM = 7,
+        ACN = 26,
+        BLM = 25,
+        SMN = 27,
+        RDM = 35,
+        BLU = 36,
+
+        CRP = 8,
+        BSM = 9,
+        ARM = 10,
+        GSM = 11,
+        LTW = 12,
+        WVR = 13,
+        ALC = 14,
+        CUL = 15,
+
+        MIN = 16,
+        BOT = 17,
+        FSH = 18,
+
     }
 }

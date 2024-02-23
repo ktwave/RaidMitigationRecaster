@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "RaidMitigationRecaster": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

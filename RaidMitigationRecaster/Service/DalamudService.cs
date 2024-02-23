@@ -30,6 +30,8 @@ namespace RaidMitigationRecaster.Service
         [PluginService] public static IJobGauges JobGauges { get; private set; }
         [PluginService] public static IPluginLog PluginLog { get; private set; }
         [PluginService] public static IGameInteropProvider Hooks { get; private set; }
+        [PluginService] public static IGameConfig GameConfig { get; private set; }
+
         public static void Error(Exception e, string message) => PluginLog.Error(e, message);
 
         public static void Error(string message) => PluginLog.Error(message);
