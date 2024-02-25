@@ -53,6 +53,7 @@ namespace RaidMitigationRecaster {
             PluginInterface.Create<DalamudService>();
             DalamudService.PluginInterface.UiBuilder.Draw += Draw;
             config = DalamudService.PluginInterface.GetPluginConfig() as Config ?? new Config();
+            if (config.IsEnableAction == null) config.InitIsEnableAction();
 
             actions = ActionService.SetActions(config, pluginInterface);
             var ImagePath = Path.Combine(pluginInterface.AssemblyLocation.Directory?.FullName!, "images\\blackout.png");
@@ -70,7 +71,7 @@ namespace RaidMitigationRecaster {
 
         private void Draw() {
             try {
-                if (isConfigOpen) MainService.DrawConfigWindow(ref config, ref isConfigOpen);
+                if (isConfigOpen) MainService.DrawConfigWindow(ref config, ref isConfigOpen, actions);
 
                 if (DalamudService.ClientState.IsPvP) return;
 
@@ -78,14 +79,16 @@ namespace RaidMitigationRecaster {
 
                 if (!config.IsEnabled) return;
 
-                if(isDebug) MainService.DrawDebugWindow(ref config);
+                if (isDebug) MainService.DrawDebugWindow(ref config);
 
-                MainService.UpdateTimers(actions, ref Timers);
-
-                if (config.IsEnabledInCombat && !DalamudService.Condition[ConditionFlag.InCombat]) return;
-
-                if (Timers != null) MainService.DrawMainWindow(ref Timers, config, imageBlackOut);
-
+                if (DalamudService.Condition[ConditionFlag.InCombat] && !DalamudService.ClientState.IsPvP) {
+                    // in combat
+                    MainService.DrawMainWindow(ref Timers, config, imageBlackOut);
+                } else {
+                    // not in combat
+                    MainService.UpdateTimers(actions, ref Timers, config);
+                    MainService.DrawMainWindow(ref Timers, config, imageBlackOut);
+                }
             } catch (Exception e) {
                 PluginLog.Error(e.Message + "\n" + e.StackTrace);
             } finally {

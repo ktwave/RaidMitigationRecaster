@@ -11,6 +11,7 @@ namespace RaidMitigationRecaster.Model {
     public class ActionModel {
         public class Action {
             public uint ClassJobId;
+            public string ActionName;
             public uint ActionId;
             public uint StatusId;
             public bool IsBuff;

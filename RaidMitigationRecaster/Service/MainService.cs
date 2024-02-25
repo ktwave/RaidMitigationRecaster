@@ -43,7 +43,7 @@ namespace RaidMitigationRecaster.Service {
     internal class MainService {
         private static int? roleFirstOrder;
 
-        internal static void DrawConfigWindow(ref Config config, ref bool isConfigOpen) {
+        internal static void DrawConfigWindow(ref Config config, ref bool isConfigOpen, List<ActionModel.Action> actions) {
             if (ImGui.Begin(RaidMitigationRecaster.Name + " Config", ref isConfigOpen, ImGuiWindowFlags.AlwaysAutoResize)) {
                 // ImGui.SetWindowSize(new Vector2(350, 500));
 
@@ -53,7 +53,7 @@ namespace RaidMitigationRecaster.Service {
                 }
 
                 ImGui.Spacing();
-
+                /*
                 var isEnabledInCombat = config.IsEnabledInCombat;
                 if (ImGui.Checkbox("戦闘時のみ有効(Enable Only In Combat)", ref isEnabledInCombat)) {
                     config.IsEnabledInCombat = isEnabledInCombat;
@@ -61,13 +61,13 @@ namespace RaidMitigationRecaster.Service {
                 ImGui.Spacing();
                 ImGui.Separator();
                 ImGui.Spacing();
-
+                */
                 if (ImGui.CollapsingHeader("UI設定(UI Settings)")) {
 
                     ImGui.Text("X座標のオフセット(X Offset)");
                     var offsetX = config.OffsetX;
                     ImGui.SetNextItemWidth(200f);
-                    if (ImGui.DragFloat("", ref offsetX, 0.1f)) {
+                    if (ImGui.DragFloat("##XOffset", ref offsetX, 0.1f)) {
                         config.OffsetX = offsetX;
                     }
                     ImGui.Spacing();
@@ -75,7 +75,7 @@ namespace RaidMitigationRecaster.Service {
                     ImGui.Text("Y座標のオフセット(Y Offset)");
                     var offsetY = config.OffsetY;
                     ImGui.SetNextItemWidth(200f);
-                    if (ImGui.DragFloat("  ", ref offsetY, 0.1f)) {
+                    if (ImGui.DragFloat("##YOffset", ref offsetY, 0.1f)) {
                         config.OffsetY = offsetY;
                     }
                     ImGui.Spacing();
@@ -83,7 +83,7 @@ namespace RaidMitigationRecaster.Service {
                     ImGui.Text("アイコンの拡大率(Icon Scale)");
                     var size = config.Size;
                     ImGui.SetNextItemWidth(200f);
-                    if (ImGui.DragFloat("   ", ref size, 0.5f, 1, 300)) {
+                    if (ImGui.DragFloat("##IconScale", ref size, 0.5f, 1, 300)) {
                         config.Size = size;
                     }
                     ImGui.Spacing();
@@ -91,7 +91,7 @@ namespace RaidMitigationRecaster.Service {
                     ImGui.Text("アイコンの横間隔(Icon Padding X)");
                     var paddingX = config.PaddingX;
                     ImGui.SetNextItemWidth(200f);
-                    if (ImGui.DragFloat("     ", ref paddingX, 0.1f, -100, 100)) {
+                    if (ImGui.DragFloat("##IconPaddingX", ref paddingX, 0.1f, -100, 100)) {
                         config.PaddingX = paddingX;
                     }
                     ImGui.Spacing();
@@ -99,7 +99,7 @@ namespace RaidMitigationRecaster.Service {
                     ImGui.Text("アイコンの縦間隔(Icon Padding Y)");
                     var paddingY = config.PaddingY;
                     ImGui.SetNextItemWidth(200f);
-                    if (ImGui.DragFloat("       ", ref paddingY, 0.1f, -100, 100)) {
+                    if (ImGui.DragFloat("##IconPaddingY", ref paddingY, 0.1f, -100, 100)) {
                         config.PaddingY = paddingY;
                     }
                     ImGui.Spacing();
@@ -107,7 +107,7 @@ namespace RaidMitigationRecaster.Service {
                     ImGui.Text("フォントの拡大率(Font Scale)");
                     var fontScale = config.FontScale;
                     ImGui.SetNextItemWidth(200f);
-                    if (ImGui.DragFloat("        ", ref fontScale, 0.5f, 1, 300)) {
+                    if (ImGui.DragFloat("##FontScale", ref fontScale, 0.5f, 1, 300)) {
                         config.FontScale = fontScale;
                     }
                     ImGui.Spacing();
@@ -115,7 +115,7 @@ namespace RaidMitigationRecaster.Service {
                     ImGui.Text("フォント X座標のオフセット(Font X Offset)");
                     var fontOffsetX = config.FontOffsetX;
                     ImGui.SetNextItemWidth(200f);
-                    if (ImGui.DragFloat("         ", ref fontOffsetX, 0.1f)) {
+                    if (ImGui.DragFloat("##FontOffsetX", ref fontOffsetX, 0.1f)) {
                         config.FontOffsetX = fontOffsetX;
                     }
                     ImGui.Spacing();
@@ -123,7 +123,7 @@ namespace RaidMitigationRecaster.Service {
                     ImGui.Text("フォント Y座標のオフセット(Font Y Offset)");
                     var fontOffsetY = config.FontOffsetY;
                     ImGui.SetNextItemWidth(200f);
-                    if (ImGui.DragFloat("           ", ref fontOffsetY, 0.1f)) {
+                    if (ImGui.DragFloat("##FontOffsetY", ref fontOffsetY, 0.1f)) {
                         config.FontOffsetY = fontOffsetY;
                     }
                     ImGui.Spacing();
@@ -137,9 +137,248 @@ namespace RaidMitigationRecaster.Service {
 
                 ImGui.Separator();
                 ImGui.Spacing();
+                if (ImGui.CollapsingHeader("アクション設定(Action ON/OFF)")) {
 
+                    ImGui.Spacing();
+                    ImGui.SameLine(30f);
+                    if (ImGui.CollapsingHeader("Tank")) {
+                        foreach (Actions.TANK a in Enum.GetValues(typeof(Actions.TANK))) {
+                            var isEnableAction = config.IsEnableAction[(uint)a];
+                            ImGui.Spacing();
+                            ImGui.SameLine(30f);
+                            if (ImGui.Checkbox(a.ToString(), ref isEnableAction)) {
+                                config.IsEnableAction[(uint)a] = isEnableAction;
+                            }
+                        }
+                    }
 
+                    ImGui.Spacing();
+                    ImGui.SameLine(30f);
+                    if (ImGui.CollapsingHeader("Healer and Caster")) {
+                        foreach (Actions.HEALERandMAGICAL a in Enum.GetValues(typeof(Actions.HEALERandMAGICAL))) {
+                            ImGui.Spacing();
+                            ImGui.SameLine(30f);
+                            var isEnableAction = config.IsEnableAction[(uint)a];
+                            if (ImGui.Checkbox(a.ToString(), ref isEnableAction)) {
+                                config.IsEnableAction[(uint)a] = isEnableAction;
+                            }
+                        }
+                    }
+
+                    ImGui.Spacing();
+                    ImGui.SameLine(30f);
+                    if (ImGui.CollapsingHeader("Melee")) {
+                        foreach (Actions.MELEE a in Enum.GetValues(typeof(Actions.MELEE))) {
+                            ImGui.Spacing();
+                            ImGui.SameLine(30f);
+                            var isEnableAction = config.IsEnableAction[(uint)a];
+                            if (ImGui.Checkbox(a.ToString(), ref isEnableAction)) {
+                                config.IsEnableAction[(uint)a] = isEnableAction;
+                            }
+                        }
+                    }
+
+                    ImGui.Spacing();
+                    ImGui.SameLine(30f);
+                    if (ImGui.CollapsingHeader("Caster")) {
+                        foreach (Actions.MAGICAL a in Enum.GetValues(typeof(Actions.MAGICAL))) {
+                            ImGui.Spacing();
+                            ImGui.SameLine(30f);
+                            var isEnableAction = config.IsEnableAction[(uint)a];
+                            if (ImGui.Checkbox(a.ToString(), ref isEnableAction)) {
+                                config.IsEnableAction[(uint)a] = isEnableAction;
+                            }
+                        }
+                    }
+
+                    ImGui.Spacing();
+                    ImGui.SameLine(30f);
+                    if (ImGui.CollapsingHeader("PLD")) {
+                        foreach (Actions.PLD a in Enum.GetValues(typeof(Actions.PLD))) {
+                            ImGui.Spacing();
+                            ImGui.SameLine(30f);
+                            var isEnableAction = config.IsEnableAction[(uint)a];
+                            if (ImGui.Checkbox(a.ToString(), ref isEnableAction)) {
+                                config.IsEnableAction[(uint)a] = isEnableAction;
+                            }
+                        }
+                    }
+
+                    ImGui.Spacing();
+                    ImGui.SameLine(30f);
+                    if (ImGui.CollapsingHeader("WAR")) {
+                        foreach (Actions.WAR a in Enum.GetValues(typeof(Actions.WAR))) {
+                            ImGui.Spacing();
+                            ImGui.SameLine(30f);
+                            var isEnableAction = config.IsEnableAction[(uint)a];
+                            if (ImGui.Checkbox(a.ToString(), ref isEnableAction)) {
+                                config.IsEnableAction[(uint)a] = isEnableAction;
+                            }
+                        }
+                    }
+
+                    ImGui.Spacing();
+                    ImGui.SameLine(30f);
+                    if (ImGui.CollapsingHeader("DRK")) {
+                        foreach (Actions.DRK a in Enum.GetValues(typeof(Actions.DRK))) {
+                            ImGui.Spacing();
+                            ImGui.SameLine(30f);
+                            var isEnableAction = config.IsEnableAction[(uint)a];
+                            if (ImGui.Checkbox(a.ToString(), ref isEnableAction)) {
+                                config.IsEnableAction[(uint)a] = isEnableAction;
+                            }
+                        }
+                    }
+
+                    ImGui.Spacing();
+                    ImGui.SameLine(30f);
+                    if (ImGui.CollapsingHeader("GNB")) {
+                        foreach (Actions.GNB a in Enum.GetValues(typeof(Actions.GNB))) {
+                            ImGui.Spacing();
+                            ImGui.SameLine(30f);
+                            var isEnableAction = config.IsEnableAction[(uint)a];
+                            if (ImGui.Checkbox(a.ToString(), ref isEnableAction)) {
+                                config.IsEnableAction[(uint)a] = isEnableAction;
+                            }
+                        }
+                    }
+
+                    ImGui.Spacing();
+                    ImGui.SameLine(30f);
+                    if (ImGui.CollapsingHeader("WHM")) {
+                        foreach (Actions.WHM a in Enum.GetValues(typeof(Actions.WHM))) {
+                            ImGui.Spacing();
+                            ImGui.SameLine(30f);
+                            var isEnableAction = config.IsEnableAction[(uint)a];
+                            if (ImGui.Checkbox(a.ToString(), ref isEnableAction)) {
+                                config.IsEnableAction[(uint)a] = isEnableAction;
+                            }
+                        }
+                    }
+
+                    ImGui.Spacing();
+                    ImGui.SameLine(30f);
+                    if (ImGui.CollapsingHeader("SCH")) {
+                        foreach (Actions.SCH a in Enum.GetValues(typeof(Actions.SCH))) {
+                            ImGui.Spacing();
+                            ImGui.SameLine(30f);
+                            var isEnableAction = config.IsEnableAction[(uint)a];
+                            if (ImGui.Checkbox(a.ToString(), ref isEnableAction)) {
+                                config.IsEnableAction[(uint)a] = isEnableAction;
+                            }
+                        }
+                    }
+
+                    ImGui.Spacing();
+                    ImGui.SameLine(30f);
+                    if (ImGui.CollapsingHeader("AST")) {
+                        foreach (Actions.AST a in Enum.GetValues(typeof(Actions.AST))) {
+                            ImGui.Spacing();
+                            ImGui.SameLine(30f);
+                            var isEnableAction = config.IsEnableAction[(uint)a];
+                            if (ImGui.Checkbox(a.ToString(), ref isEnableAction)) {
+                                config.IsEnableAction[(uint)a] = isEnableAction;
+                            }
+                        }
+                    }
+
+                    ImGui.Spacing();
+                    ImGui.SameLine(30f);
+                    if (ImGui.CollapsingHeader("SGE")) {
+                        foreach (Actions.SGE a in Enum.GetValues(typeof(Actions.SGE))) {
+                            ImGui.Spacing();
+                            ImGui.SameLine(30f);
+                            var isEnableAction = config.IsEnableAction[(uint)a];
+                            if (ImGui.Checkbox(a.ToString(), ref isEnableAction)) {
+                                config.IsEnableAction[(uint)a] = isEnableAction;
+                            }
+                        }
+                    }
+
+                    ImGui.Spacing();
+                    ImGui.SameLine(30f);
+                    if (ImGui.CollapsingHeader("MNK")) {
+                        foreach (Actions.MNK a in Enum.GetValues(typeof(Actions.MNK))) {
+                            ImGui.Spacing();
+                            ImGui.SameLine(30f);
+                            var isEnableAction = config.IsEnableAction[(uint)a];
+                            if (ImGui.Checkbox(a.ToString(), ref isEnableAction)) {
+                                config.IsEnableAction[(uint)a] = isEnableAction;
+                            }
+                        }
+                    }
+
+                    ImGui.Spacing();
+                    ImGui.SameLine(30f);
+                    if (ImGui.CollapsingHeader("RPR")) {
+                        foreach (Actions.RPR a in Enum.GetValues(typeof(Actions.RPR))) {
+                            ImGui.Spacing();
+                            ImGui.SameLine(30f);
+                            var isEnableAction = config.IsEnableAction[(uint)a];
+                            if (ImGui.Checkbox(a.ToString(), ref isEnableAction)) {
+                                config.IsEnableAction[(uint)a] = isEnableAction;
+                            }
+                        }
+                    }
+
+                    ImGui.Spacing();
+                    ImGui.SameLine(30f);
+                    if (ImGui.CollapsingHeader("BRD")) {
+                        foreach (Actions.BRD a in Enum.GetValues(typeof(Actions.BRD))) {
+                            ImGui.Spacing();
+                            ImGui.SameLine(30f);
+                            var isEnableAction = config.IsEnableAction[(uint)a];
+                            if (ImGui.Checkbox(a.ToString(), ref isEnableAction)) {
+                                config.IsEnableAction[(uint)a] = isEnableAction;
+                            }
+                        }
+                    }
+
+                    ImGui.Spacing();
+                    ImGui.SameLine(30f);
+                    if (ImGui.CollapsingHeader("MCH")) {
+                        foreach (Actions.MCH a in Enum.GetValues(typeof(Actions.MCH))) {
+                            ImGui.Spacing();
+                            ImGui.SameLine(30f);
+                            var isEnableAction = config.IsEnableAction[(uint)a];
+                            if (ImGui.Checkbox(a.ToString(), ref isEnableAction)) {
+                                config.IsEnableAction[(uint)a] = isEnableAction;
+                            }
+                        }
+                    }
+
+                    ImGui.Spacing();
+                    ImGui.SameLine(30f);
+                    if (ImGui.CollapsingHeader("DNC")) {
+                        foreach (Actions.DNC a in Enum.GetValues(typeof(Actions.DNC))) {
+                            ImGui.Spacing();
+                            ImGui.SameLine(30f);
+                            var isEnableAction = config.IsEnableAction[(uint)a];
+                            if (ImGui.Checkbox(a.ToString(), ref isEnableAction)) {
+                                config.IsEnableAction[(uint)a] = isEnableAction;
+                            }
+                        }
+                    }
+
+                    ImGui.Spacing();
+                    ImGui.SameLine(30f);
+                    if (ImGui.CollapsingHeader("RDM")) {
+                        foreach (Actions.RDM a in Enum.GetValues(typeof(Actions.RDM))) {
+                            ImGui.Spacing();
+                            ImGui.SameLine(30f);
+                            var isEnableAction = config.IsEnableAction[(uint)a];
+                            ImGui.Spacing();
+                            ImGui.SameLine(60f);
+                            if (ImGui.Checkbox(a.ToString(), ref isEnableAction)) {
+                                config.IsEnableAction[(uint)a] = isEnableAction;
+                            }
+                        }
+                    }
+                }
+
+                ImGui.Separator();
                 ImGui.Spacing();
+
                 config.Font = GameFontFamilyAndSize.Axis36;
 
                 if (ImGui.Button("閉じる(Close)")) {
@@ -328,16 +567,13 @@ namespace RaidMitigationRecaster.Service {
             return null;
         }
 
-        public static void UpdateTimers(List<ActionModel.Action> actions, ref List<TimerModel.Timer> timers) {
-            // in combat
-            if (DalamudService.Condition[ConditionFlag.InCombat]) return;
-
+        public static void UpdateTimers(List<ActionModel.Action> actions, ref List<TimerModel.Timer> timers, Config config) {
             timers = new List<TimerModel.Timer>();
 
             if (DalamudService.PartyList.Count == 0) {
                 // solo
                 var localPlayer = DalamudService.ClientState.LocalPlayer;
-                var action = actions.Where(a => a.ClassJobId == localPlayer.ClassJob.Id).ToList();
+                var action = actions.Where(a => a.ClassJobId == localPlayer.ClassJob.Id && config.IsEnableAction[(uint)a.ActionId]).ToList();
 
                 foreach (var j in Enumerable.Range(0, action.Count())) {
                     TimerModel.Timer timer = new TimerModel.Timer();
@@ -361,7 +597,7 @@ namespace RaidMitigationRecaster.Service {
                 // update timer
                 foreach (var i in Enumerable.Range(0, partyList.Count())) {
                     var partyMember = partyList[i];
-                    var action = actions.Where(a => a.ClassJobId == partyMember.ClassJob.Id).ToList();
+                    var action = actions.Where(a => a.ClassJobId == partyMember.ClassJob.Id && config.IsEnableAction[(uint)a.ActionId]).ToList();
                     foreach (var j in Enumerable.Range(0, action.Count())) {
                         TimerModel.Timer timer = new TimerModel.Timer();
                         timer.ClassJobId = action[j].ClassJobId;
@@ -497,31 +733,8 @@ namespace RaidMitigationRecaster.Service {
 
                 ImGui.Separator();
 
-                if (ImGui.CollapsingHeader("partyRolesSort")) {
-                    var partyRoles = PartyOrderHelper.GetPartyRoles(partyList);
-                    ImGui.Text("partyRoles.DPS: " + partyRoles.DPS.ToString());
-                    ImGui.Text("partyRoles.Healer: " + partyRoles.Healer.ToString());
-                    ImGui.Text("partyRoles.Tank: " + partyRoles.Tank.ToString());
-                }
+                if (ImGui.CollapsingHeader("Debug Temp")) {
 
-                if (ImGui.CollapsingHeader("partyListOrder")) {
-                    RaptureUiDataModule* raptureUiDataModule = RaptureUiDataModule.Instance();
-                    var Order = ConvertOrderArrayToList(raptureUiDataModule->PartyListTankOrder);
-                    for (int i = 0; i < Order.Count; i++) {
-                        ImGui.Text("JobId: " + Order[i].ToString());
-                    }
-                    ImGui.Separator();
-
-                    Order = ConvertOrderArrayToList(raptureUiDataModule->PartyListHealerOrder);
-                    for (int i = 0; i < Order.Count; i++) {
-                        ImGui.Text("JobId: " + Order[i].ToString());
-                    }
-                    ImGui.Separator();
-
-                    Order = ConvertOrderArrayToList(raptureUiDataModule->PartyListDpsOrder);
-                    for (int i = 0; i < Order.Count; i++) {
-                        ImGui.Text("JobId: " + Order[i].ToString());
-                    }
                 }
 
 
