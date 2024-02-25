@@ -47,26 +47,30 @@ namespace RaidMitigationRecaster {
         }
 
         public RaidMitigationRecaster([RequiredVersion("1.0")] DalamudPluginInterface pluginInterface) {
-            PluginInterface = pluginInterface;
+            try {
+                PluginInterface = pluginInterface;
 
-            R = this;
-            PluginInterface.Create<DalamudService>();
-            DalamudService.PluginInterface.UiBuilder.Draw += Draw;
-            config = DalamudService.PluginInterface.GetPluginConfig() as Config ?? new Config();
-            if (config.IsEnableAction == null) config.InitIsEnableAction();
+                R = this;
+                PluginInterface.Create<DalamudService>();
+                DalamudService.PluginInterface.UiBuilder.Draw += Draw;
+                config = DalamudService.PluginInterface.GetPluginConfig() as Config ?? new Config();
+                if (config.IsEnableAction == null) config.InitIsEnableAction();
 
-            actions = ActionService.SetActions(config, pluginInterface);
-            var ImagePath = Path.Combine(pluginInterface.AssemblyLocation.Directory?.FullName!, "images\\blackout.png");
-            imageBlackOut = pluginInterface.UiBuilder.LoadImage(ImagePath);
+                actions = ActionService.SetActions(config, pluginInterface);
+                var ImagePath = Path.Combine(pluginInterface.AssemblyLocation.Directory?.FullName!, "images\\blackout.png");
+                imageBlackOut = pluginInterface.UiBuilder.LoadImage(ImagePath);
 
-            PluginLog.Information("[" + Name + "] Initialize!!!");
+                PluginLog.Information("[" + Name + "] Initialize!!!");
 
-            DalamudService.PluginInterface.UiBuilder.OpenConfigUi += delegate { isConfigOpen = true; };
-            DalamudService.Framework.RunOnFrameworkThread(() => {
-                if (config.Font != null) {
-                    _ = DalamudService.PluginInterface.UiBuilder.GetGameFontHandle(new GameFontStyle(config.Font.Value));
-                }
-            });
+                DalamudService.PluginInterface.UiBuilder.OpenConfigUi += delegate { isConfigOpen = true; };
+                DalamudService.Framework.RunOnFrameworkThread(() => {
+                    if (config.Font != null) {
+                        _ = DalamudService.PluginInterface.UiBuilder.GetGameFontHandle(new GameFontStyle(config.Font.Value));
+                    }
+                });
+            } catch (Exception e) {
+                PluginLog.Error(e.Message + "\n" + e.StackTrace);
+            }
         }
 
         private void Draw() {
